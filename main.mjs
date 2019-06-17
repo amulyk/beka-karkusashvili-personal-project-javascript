@@ -1,4 +1,4 @@
-import { Transaction } from './transaction/index';
+import { Transaction } from './transaction/index.mjs';
 
 const scenario = [
     {
