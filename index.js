@@ -12,10 +12,14 @@ class Transaction {
         this._validate(scenario, 'array', 'First parameter');
 
         const steps = scenario.sort((a, b) => a.index - b.index);
+        if(steps[steps.length-1].restore !== void 0) {
+            throw new Error('Last step does\'n have restor method.');
+        }
+
         let stepCount = -1;
 
         for (const step of steps) {
-            const { index, meta, call, restore } = step;
+            const { index, meta, call, silent } = step;
 
             this._validate(index, 'number', 'Index')
                 ._validate(meta, 'object', 'Meta')
@@ -34,8 +38,9 @@ class Transaction {
             } catch ({name, message, stack}) {
                 log.error = { name, message, stack };
                 
-                if (typeof restore === 'function') {
+                if (silent !== true) {
                     this.logs.push(log);
+                    this.store = {};
                     for (let i = stepCount; i >= 0; i--) {
                         const { restore } = steps[i];
                         if (typeof restore !== 'function') {
@@ -45,9 +50,6 @@ class Transaction {
                             await restore(this.store);
                         } catch(err) {
                             throw err;
-                        }
-                        if (i === 0) {
-                            this.store = {};
                         }
                     }
                     break;
@@ -84,15 +86,17 @@ const scenario = [
             title: 'Title 1',
             description: 'This action is responsible for reading the most popular customers'
         },
-				// callback for main execution
+                // callback for main execution
+        // silent: true,
         call: async (store) => {
             // await sleep(1000);
             store.surname = 'Jon'
+            // throw new Error('first error');
         },
 				// callback for rollback
-        restore: async (store) => {
-            store.surname = "testing restor"
-        }
+        // restore: async () => {
+           
+        // }
     },
     {
         index: 2,
@@ -100,17 +104,16 @@ const scenario = [
             title: 'Title 2',
             description: 'This action is responsible for reading the most popular customers'
         },
+        silent: true,
 				// callback for main execution
         call: async (store) => {
             store.name = 'Jon'
-            // await sleep(2000);
-            // throw new TypeError('name is not defiend');
+            await sleep(2000);
+            throw new TypeError('name is not defiend');
 
         },
 				// callback for rollback
-        restore: async (store) => {
-            throw new TypeError('Error from restor');
-        }
+        restore: async () => {}
     },
     {
         index: 3,
@@ -118,16 +121,17 @@ const scenario = [
             title: 'Title 3',
             description: 'This action is responsible for reading the most popular customers'
         },
+        // silent: true,
 				// callback for main execution
         call: async (store) => {
             store.name = 'Jon'
-            throw new TypeError('name is not defiend');
+            // throw new TypeError('name is not defiend');
             // await sleep(2000);
         },
 				// callback for rollback
-        restore: async (store) => {
-            throw new TypeError('name is not defiend');
-        }
+        // restore: async (store) => {
+        //     throw new TypeError('name is not defiend');
+        // }
     }
 ];
 

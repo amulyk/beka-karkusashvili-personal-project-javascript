@@ -7,15 +7,17 @@ const scenario = [
             title: 'Title 1',
             description: 'This action is responsible for reading the most popular customers'
         },
-				// callback for main execution
+                // callback for main execution
+        // silent: true,
         call: async (store) => {
             // await sleep(1000);
             store.surname = 'Jon'
+            // throw new Error('first error');
         },
 				// callback for rollback
-        restore: async (store) => {
-            store.surname = "testing restor"
-        }
+        // restore: async () => {
+           
+        // }
     },
     {
         index: 2,
@@ -23,17 +25,16 @@ const scenario = [
             title: 'Title 2',
             description: 'This action is responsible for reading the most popular customers'
         },
+        silent: true,
 				// callback for main execution
         call: async (store) => {
             store.name = 'Jon'
-            // await sleep(2000);
-            // throw new TypeError('name is not defiend');
+            await sleep(2000);
+            throw new TypeError('name is not defiend');
 
         },
 				// callback for rollback
-        restore: async (store) => {
-            throw new TypeError('Error from restor');
-        }
+        restore: async () => {}
     },
     {
         index: 3,
@@ -41,16 +42,17 @@ const scenario = [
             title: 'Title 3',
             description: 'This action is responsible for reading the most popular customers'
         },
+        // silent: true,
 				// callback for main execution
         call: async (store) => {
             store.name = 'Jon'
-            throw new TypeError('name is not defiend');
+            // throw new TypeError('name is not defiend');
             // await sleep(2000);
         },
 				// callback for rollback
-        restore: async (store) => {
-            throw new TypeError('name is not defiend');
-        }
+        // restore: async (store) => {
+        //     throw new TypeError('name is not defiend');
+        // }
     }
 ];
 
@@ -70,7 +72,6 @@ const transaction = new Transaction();
             console.log(err);
     }
 })();
-
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));

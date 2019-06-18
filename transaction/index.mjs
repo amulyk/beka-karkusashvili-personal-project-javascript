@@ -10,10 +10,14 @@ export class Transaction {
         this._validate(scenario, 'array', 'First parameter');
 
         const steps = scenario.sort((a, b) => a.index - b.index);
+        if(steps[steps.length-1].restore !== void 0) {
+            throw new Error('Last step does\'n have restor method.');
+        }
+
         let stepCount = -1;
 
         for (const step of steps) {
-            const { index, meta, call, restore } = step;
+            const { index, meta, call, silent } = step;
 
             this._validate(index, 'number', 'Index')
                 ._validate(meta, 'object', 'Meta')
@@ -32,8 +36,9 @@ export class Transaction {
             } catch ({name, message, stack}) {
                 log.error = { name, message, stack };
                 
-                if (typeof restore === 'function') {
+                if (silent !== true) {
                     this.logs.push(log);
+                    this.store = {};
                     for (let i = stepCount; i >= 0; i--) {
                         const { restore } = steps[i];
                         if (typeof restore !== 'function') {
@@ -43,9 +48,6 @@ export class Transaction {
                             await restore(this.store);
                         } catch(err) {
                             throw err;
-                        }
-                        if (i === 0) {
-                            this.store = {};
                         }
                     }
                     break;
