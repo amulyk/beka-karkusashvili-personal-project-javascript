@@ -9,6 +9,8 @@ export class Transaction {
 
         this._validate(scenario, 'array', 'First parameter');
 
+        const validData = ['index', 'meta', 'description', 'call', 'restore', 'silent'];
+
         scenario.forEach(item => {
             const { index, meta, call } = item;
             if (index < 1) {
@@ -21,10 +23,19 @@ export class Transaction {
                 ._validate(meta.description, 'string', 'Description')
                 ._validate(call, 'function', 'Call');
 
-            for (const key in meta) {
-                if (meta.hasOwnProperty(key)) {
-                    if (key !== 'title' && key !== 'description') {
-                        throw new Error('Meta object only must have title and description');
+            for (const key in item) {
+                if (!item.hasOwnProperty(key)) { continue; }
+                if (validData.indexOf(key) === -1) {
+                    throw new Error('Data you put is incorrect');
+                }
+
+                if (key === 'meta') {
+                    const meta = item[key];
+                    for (const key in meta) {
+                        if (!meta.hasOwnProperty(key)) { continue; } 
+                        if (key !== 'title' && key !== 'description') {
+                            throw new Error('Data you put is incorrect');
+                        }
                     }
                 }
             }
