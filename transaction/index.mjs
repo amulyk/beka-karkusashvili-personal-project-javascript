@@ -9,15 +9,8 @@ export class Transaction {
 
         this._validate(scenario, 'array', 'First parameter');
 
-        const steps = scenario.sort((a, b) => a.index - b.index);
-        if(steps[steps.length-1].hasOwnProperty('restore')) {
-            throw new Error('Last step does\'n have restor method.');
-        }
-        let stepCount = -1;
-
-        for (const step of steps) {
-            const { index, meta, call, silent } = step;
-
+        scenario.forEach(item => {
+            const { index, meta, call } = item;
             if (index < 1) {
                 throw new Error('Index must more than or equal 1.');
             }
@@ -27,10 +20,26 @@ export class Transaction {
                 ._validate(meta.title, 'string', 'Title')
                 ._validate(meta.description, 'string', 'Description')
                 ._validate(call, 'function', 'Call');
-            
-            const { title, description } = meta;
 
-            const log = { index, meta: { title, description } };
+            for (const key in meta) {
+                if (meta.hasOwnProperty(key)) {
+                    if (key !== 'title' && key !== 'description') {
+                        throw new Error('Meta object only must have title and description');
+                    }
+                }
+            }
+
+        });
+        const steps = scenario.sort((a, b) => a.index - b.index);
+        if(steps[steps.length-1].hasOwnProperty('restore')) {
+            throw new Error('Last step does\'n have restor method.');
+        }
+        let stepCount = -1;
+
+        for (const step of steps) {
+            const { index, meta, call, silent } = step;
+            
+            const log = { index, meta };
             const storeBefore = {...this.store};
             
             try {
