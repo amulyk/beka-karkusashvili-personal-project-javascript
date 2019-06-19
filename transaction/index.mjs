@@ -1,4 +1,6 @@
-export class Transaction {
+import { validation } from '../validation';
+
+class Transaction {
 
     constructor() {
         this.store = {};
@@ -9,36 +11,13 @@ export class Transaction {
 
         this._validate(scenario, 'array', 'First parameter');
 
-        const validData = ['index', 'meta', 'description', 'call', 'restore', 'silent'];
-
         scenario.forEach(item => {
             const { index, meta, call } = item;
             if (index < 1) {
                 throw new Error('Index must more than or equal 1.');
             }
 
-            this._validate(index, 'number', 'Index')
-                ._validate(meta, 'object', 'Meta')
-                ._validate(meta.title, 'string', 'Title')
-                ._validate(meta.description, 'string', 'Description')
-                ._validate(call, 'function', 'Call');
-
-            for (const key in item) {
-                if (!item.hasOwnProperty(key)) { continue; }
-                if (validData.indexOf(key) === -1) {
-                    throw new Error('Data you put is incorrect');
-                }
-
-                if (key === 'meta') {
-                    const meta = item[key];
-                    for (const key in meta) {
-                        if (!meta.hasOwnProperty(key)) { continue; } 
-                        if (key !== 'title' && key !== 'description') {
-                            throw new Error('Data you put is incorrect');
-                        }
-                    }
-                }
-            }
+            validation(item, schema);
 
         });
         const steps = scenario.sort((a, b) => a.index - b.index);
@@ -101,3 +80,22 @@ export class Transaction {
     }
 
 }
+
+const schema = {
+    index: 'number',
+    meta: {
+        title: 'string',
+        description: 'string'
+    },
+    call: 'function',
+    restore: {
+        type: 'function',
+        required: false
+    },
+    silent: {
+        type: 'string',
+        required: false
+    }
+}
+
+export { Transaction };
